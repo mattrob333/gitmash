@@ -28,3 +28,7 @@
 - Use lightweight runtime schema descriptors instead of adding a validation dependency. The schema validator checks required fields, primitive types, records, arrays, and enum values while keeping the project at zero new npm packages.
 - Keep Phase 5 agent prompts in one template module with exported TypeScript output types and runtime schemas. This makes prompt text, output contracts, validation, and tests evolve together.
 - Retry agent execution only after schema validation failures and include the validation error in the next prompt. This preserves deterministic failure behavior while giving the model one correction loop before surfacing errors.
+- Generate Phase 6 merge plans deterministically from saved AI artifacts instead of making another model call. The merge planner treats the Phase 5 comparison, feature inventory, summaries, user intent, and audit as the source of truth and records every decision with paths, reasons, and confidence.
+- Keep build planning as a DAG of typed build tasks separate from merge-plan generation. Phase 7 can execute or update task status without changing the user-facing merge review contract.
+- Store merge-plan approval in the same in-process project registry used by the MVP project lifecycle. Durable approval state remains deferred until a database is introduced.
+- Implement `/api/projects/[id]/plan/approve` as a nested App Router endpoint because Next.js route files cannot serve both `/plan` and `/plan/approve` from the same file.

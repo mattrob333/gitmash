@@ -42,3 +42,10 @@
 - Added `lib/schema-validator.ts` to validate AI outputs for required fields, primitive types, arrays, records, and enum values with clear path-based error messages.
 - Added `lib/agent-runner.ts` to run each agent through an AI provider, validate structured output, and retry failed schema validations with corrective feedback.
 - Added Phase 5 tests for provider behavior, schema validation failures, retry behavior, and all agent runner helpers using fixture JSON only.
+- Started Phase 6 Merge Plan UI from `BUILD.md` and PRD sections 8.12, 8.13, and 23.5.
+- Added `lib/merge-planner.ts` to combine saved AI analysis artifacts into a structured merge plan with base repo selection, keep/adapt/rewrite/discard/create-new decisions, conflicts, risks, milestones, source paths, target paths, reasons, and confidence scores.
+- Added `lib/build-planner.ts` to convert merge decisions into ordered build tasks with dependency-aware topological sorting, related files, and test requirements.
+- Added `components/merge-plan-view.tsx` for the merge plan review screen with base repo rationale, grouped decision cards, warning-styled conflicts/risks, and approval gating until analysis is complete.
+- Added `GET /api/projects/[id]/plan` to return or generate a merge plan from saved analysis artifacts and `POST /api/projects/[id]/plan/approve` to mark the current plan approved.
+- Added Phase 6 planner tests for base repo selection, decision resolution, task generation, dependency ordering, missing dependencies, and cycle detection using fixture data only.
+- Ran `npm test`; all Phase 1 through Phase 6 tests passed.

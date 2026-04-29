@@ -4,9 +4,11 @@ import { validateRepoExists, type CommandRunner } from "@/lib/github-api";
 import { generateProjectId, getWorkspacePaths } from "@/lib/workspace";
 import type { ParsedGitHubRepo } from "@/lib/github";
 import { cloneRepo } from "@/lib/repo-cloner";
+import type { MergePlan } from "@/lib/merge-planner";
 import type { Project, SourceRepo } from "@/types/project";
 
 const projects = new Map<string, Project>();
+const mergePlans = new Map<string, { plan: MergePlan; approved: boolean; approvedAt: string | null }>();
 
 export async function createProject(brief: string, repos: ParsedGitHubRepo[]): Promise<Project> {
   const projectId = generateProjectId();
@@ -37,6 +39,36 @@ export async function createProject(brief: string, repos: ParsedGitHubRepo[]): P
 
 export function getProject(projectId: string): Project | null {
   return projects.get(projectId) ?? null;
+}
+
+export function getProjectMergePlan(projectId: string): { plan: MergePlan; approved: boolean; approvedAt: string | null } | null {
+  return mergePlans.get(projectId) ?? null;
+}
+
+export function saveProjectMergePlan(projectId: string, plan: MergePlan) {
+  const existing = mergePlans.get(projectId);
+  const record = {
+    plan,
+    approved: existing?.approved ?? false,
+    approvedAt: existing?.approvedAt ?? null,
+  };
+  mergePlans.set(projectId, record);
+  return record;
+}
+
+export function approveProjectMergePlan(projectId: string) {
+  const existing = mergePlans.get(projectId);
+  if (!existing) {
+    return null;
+  }
+
+  const record = {
+    ...existing,
+    approved: true,
+    approvedAt: new Date().toISOString(),
+  };
+  mergePlans.set(projectId, record);
+  return record;
 }
 
 export async function validateRepos(
