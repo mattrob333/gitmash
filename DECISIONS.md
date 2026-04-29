@@ -24,3 +24,7 @@
 - Keep stack, dependency, route, component, and risk detectors heuristic-based for the MVP. The rules favor deterministic, explainable markers over broad parsing that would require additional dependencies.
 - Generate Phase 4 repo digests from the existing static analysis artifacts instead of rescanning with separate logic. This keeps AI-facing markdown aligned with the JSON facts that later agents will cite.
 - Chunk only ranked important files into `important-files/file-NNN.md`, with filtered paths and basic secret-line redaction. This preserves prompt budget while avoiding sensitive file intake.
+- Implement Phase 5 AI calls behind a small `AIProvider` interface and a fetch-based OpenAI provider. This keeps the MVP dependency-free and leaves room for Anthropic, Grok, Ollama, or other providers later.
+- Use lightweight runtime schema descriptors instead of adding a validation dependency. The schema validator checks required fields, primitive types, records, arrays, and enum values while keeping the project at zero new npm packages.
+- Keep Phase 5 agent prompts in one template module with exported TypeScript output types and runtime schemas. This makes prompt text, output contracts, validation, and tests evolve together.
+- Retry agent execution only after schema validation failures and include the validation error in the next prompt. This preserves deterministic failure behavior while giving the model one correction loop before surfacing errors.

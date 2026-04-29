@@ -36,3 +36,9 @@
 - Updated `lib/repo-analyzer.ts` so a completed analysis now includes JSON artifacts, important-file chunks, and the repo digest path in `analysis.artifacts`.
 - Added local fixture tests for digest generation, file tree truncation, chunk selection, and sensitive-file exclusion/redaction.
 - Ran `npm test`; all Phase 1 through Phase 4 utility tests passed.
+- Started Phase 5 AI Analysis Layer from `BUILD.md` and PRD sections 8.6 through 8.10 plus the prompting standards.
+- Added `lib/ai-provider.ts` with a model-agnostic provider interface, fetch-based OpenAI chat completions implementation, JSON-mode support, and provider factory.
+- Added `lib/agent-prompt-templates.ts` with Repo Summary, User Intent, Feature Inventory, Cross-Repo Comparison, and Best Practice Audit prompts, exported TypeScript output types, and runtime schema descriptors.
+- Added `lib/schema-validator.ts` to validate AI outputs for required fields, primitive types, arrays, records, and enum values with clear path-based error messages.
+- Added `lib/agent-runner.ts` to run each agent through an AI provider, validate structured output, and retry failed schema validations with corrective feedback.
+- Added Phase 5 tests for provider behavior, schema validation failures, retry behavior, and all agent runner helpers using fixture JSON only.
