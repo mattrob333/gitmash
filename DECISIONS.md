@@ -19,3 +19,6 @@
 - Keep repo intake security conservative by limiting Phase 2 clone processing to git metadata, filesystem size, manifest reads, and file extension counts. No dependency installation or repository scripts run during intake.
 - Store Phase 2 project state in an in-process registry to support the clone status endpoint without introducing a database before the MVP needs durable retrieval.
 - Use local git repositories and mocked command runners in tests so validation and clone coverage does not depend on network access or public GitHub availability.
+- Implement Phase 3 static analysis as local filesystem scanners that read manifests and source text only. The analyzer never installs dependencies or executes cloned repository code.
+- Save Phase 3 artifacts under `analysis/<repo-id>/` as focused JSON files so later digest and AI phases can consume objective facts without rescanning repositories.
+- Keep stack, dependency, route, component, and risk detectors heuristic-based for the MVP. The rules favor deterministic, explainable markers over broad parsing that would require additional dependencies.

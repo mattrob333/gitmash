@@ -22,3 +22,11 @@
 - Added a minimal in-process project registry plus `validateRepos`, `cloneProjectRepos`, and `GET /api/projects/[id]/repos` so clone progress can be queried during the MVP.
 - Updated `POST /api/projects` to create a workspace, validate all repositories before accepting the project, and begin repository cloning after validation succeeds.
 - Added offline tests for GitHub API validation with mocked curl responses and repo cloning with local git fixture repositories.
+- Started Phase 3 File Filtering & Static Analysis from `BUILD.md` and PRD sections 8.3 and 8.4.
+- Expanded `lib/file-filter.ts` with `walkFiles` and `generateFileTree` so cloned repositories can be scanned through the same exclusion rules used before AI analysis.
+- Added stack, package manager, and test framework detection in `lib/stack-detector.ts` for Next.js, Vite, React, Express, FastAPI, Flask, Django, and common lockfile markers.
+- Added `lib/dependency-analyzer.ts` to parse `package.json`, `pyproject.toml`, and `requirements.txt`, categorize dependencies, and flag known risky or deprecated packages.
+- Added route, component, and risk scanners for Next.js pages/API routes, Express/FastAPI routes, React components, services, models, schemas, hooks, utilities, test gaps, possible secrets, untyped ratios, entry points, and large files.
+- Added `lib/repo-analyzer.ts` to run all Phase 3 detectors and save `file-tree.json`, `dependency-analysis.json`, `route-map.json`, `component-map.json`, and `risk-report.json` under `analysis/<repo-id>/`.
+- Added local temp-directory tests for all Phase 3 analyzers and artifact generation.
+- Ran `npm test`; all Phase 1, Phase 2, and Phase 3 utility tests passed.
