@@ -25,7 +25,11 @@ export async function POST(request: Request) {
     const repos = validateRepoUrls(body.repoUrls);
     const project = await createProject(brief, repos);
     await validateRepos(project);
-    void cloneProjectRepos(project);
+
+    // Clone repos in background - project already returned with pending status
+    cloneProjectRepos(project).catch((error) => {
+      console.error(`[gitmash] Background clone failed for ${project.id}:`, error);
+    });
 
     return NextResponse.json({ project }, { status: 201 });
   } catch (error) {

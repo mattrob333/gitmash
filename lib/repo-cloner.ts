@@ -1,4 +1,4 @@
-import { exec } from "node:child_process";
+import { spawn } from "node:child_process";
 import { access, mkdir, readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { ParsedGitHubRepo } from "./github.ts";
@@ -253,12 +253,32 @@ async function pathExists(filePath: string): Promise<boolean> {
 
 function execCommand(command: string): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
-    exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
-      if (error) {
-        reject(new Error(stderr || error.message));
+    const parts = command.match(/(?:'[^']*'|"[^"]*"|\S)+/g) ?? [command];
+    const cmd = parts[0];
+    const args = parts.slice(1).map((p) => p.replace(/^['"]|['"]$/g, ""));
+    const child = spawn(cmd, args, {
+      stdio: ["ignore", "pipe", "pipe"],
+      shell: false,
+    });
+    let stdout = "";
+    let stderr = "";
+    const maxBuffer = 10 * 1024 * 1024;
+    child.stdout?.on("data", (data: Buffer) => {
+      stdout += data.toString();
+      if (stdout.length > maxBuffer) stdout = stdout.slice(-maxBuffer);
+    });
+    child.stderr?.on("data", (data: Buffer) => {
+      stderr += data.toString();
+      if (stderr.length > maxBuffer) stderr = stderr.slice(-maxBuffer);
+    });
+    child.on("error", (error: Error) => {
+      reject(error);
+    });
+    child.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(stderr || `Command exited with code ${code}`));
         return;
       }
-
       resolve({ stdout, stderr });
     });
   });

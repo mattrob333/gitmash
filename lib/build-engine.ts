@@ -130,7 +130,7 @@ export async function runBuildEngine(options: BuildEngineOptions): Promise<Build
   let validation: ValidationRunResult | null = null;
   let repair: RepairResult | null = null;
   if (options.validation?.enabled !== false) {
-    await runTask(taskLog, "verify-builds", async () => {
+    await runTask(taskLog, "run-validation", async () => {
       validationCommands = await detectProjectCommands(options.outputDir);
       validation = await runValidationCommands(
         options.outputDir,
