@@ -6,11 +6,13 @@ import type { ParsedGitHubRepo } from "@/lib/github";
 import { cloneRepo } from "@/lib/repo-cloner";
 import type { MergePlan } from "@/lib/merge-planner";
 import type { BuildResult } from "@/lib/build-engine";
+import type { ReviewReport } from "@/lib/code-review";
 import type { Project, SourceRepo } from "@/types/project";
 
 const projects = new Map<string, Project>();
 const mergePlans = new Map<string, { plan: MergePlan; approved: boolean; approvedAt: string | null }>();
 const builds = new Map<string, ProjectBuild>();
+const reviews = new Map<string, ProjectReview>();
 
 export type ProjectBuild = {
   projectId: string;
@@ -19,6 +21,15 @@ export type ProjectBuild = {
   startedAt: string | null;
   completedAt: string | null;
   result: BuildResult | null;
+};
+
+export type ProjectReview = {
+  projectId: string;
+  status: "idle" | "running" | "completed" | "failed";
+  report: ReviewReport | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  error: string | null;
 };
 
 export async function createProject(brief: string, repos: ParsedGitHubRepo[]): Promise<Project> {
@@ -110,6 +121,15 @@ export function updateBuildStatus(
   delete (next as Partial<ProjectBuild> & { log?: string }).log;
   builds.set(projectId, next);
   return next;
+}
+
+export function getProjectReview(projectId: string): ProjectReview | null {
+  return reviews.get(projectId) ?? null;
+}
+
+export function saveProjectReview(projectId: string, review: ProjectReview): ProjectReview {
+  reviews.set(projectId, review);
+  return review;
 }
 
 export async function validateRepos(
