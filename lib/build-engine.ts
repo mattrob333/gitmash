@@ -157,8 +157,10 @@ export async function runBuildEngine(options: BuildEngineOptions): Promise<Build
     });
   }
 
+  // capture outside closure for type narrowing
+  const validationResult = validation as ValidationRunResult | null;
   return {
-    success: errors.length === 0 && (validation?.success ?? true),
+    success: errors.length === 0 && (validationResult?.success ?? true),
     outputDir: options.outputDir,
     generatedFiles: [...generatedFiles].sort(),
     docsGenerated,

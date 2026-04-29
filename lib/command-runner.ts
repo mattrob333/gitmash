@@ -73,7 +73,7 @@ export async function executeCommand(
       },
       (error, stdout, stderr) => {
         const exitCode = typeof (error as NodeJS.ErrnoException | null)?.code === "number"
-          ? (error as NodeJS.ErrnoException).code as number
+          ? Number((error as NodeJS.ErrnoException).code)
           : error
             ? 1
             : 0;

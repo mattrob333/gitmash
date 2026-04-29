@@ -71,12 +71,13 @@ describe("OpenAIProvider", () => {
       });
 
       assert.deepEqual(result, { result: "ok" });
+      const body = capturedBody as Record<string, unknown>;
       assert.equal(capturedUrl, "https://api.openai.com/v1/chat/completions");
-      assert.equal(capturedBody?.model, "gpt-test");
-      assert.equal(capturedBody?.max_tokens, 123);
-      assert.equal(capturedBody?.temperature, 0.2);
-      assert.deepEqual(capturedBody?.response_format, { type: "json_object" });
-      assert.match(JSON.stringify(capturedBody?.messages), /system/);
+      assert.equal(body.model, "gpt-test");
+      assert.equal(body.max_tokens, 123);
+      assert.equal(body.temperature, 0.2);
+      assert.deepEqual(body.response_format, { type: "json_object" });
+      assert.match(JSON.stringify(body.messages), /system/);
       assert.match(JSON.stringify(capturedHeaders), /Bearer test-key/);
     } finally {
       globalThis.fetch = originalFetch;
