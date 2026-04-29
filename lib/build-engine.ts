@@ -9,6 +9,9 @@ import {
   type ScaffoldFile,
 } from "./file-copier.ts";
 import { readJsonIfExists, readTextIfExists } from "./analysis-utils.ts";
+import { detectProjectCommands, type DetectedCommand } from "./command-detector.ts";
+import { runValidationCommands, type CommandExecutor, type ValidationRunResult } from "./command-runner.ts";
+import { runRepairLoop, type RepairResult } from "./repair-loop.ts";
 import type { MergeDecision, MergePlan } from "./merge-planner.ts";
 import type { Project, RepoAnalysis } from "../types/project.ts";
 
@@ -20,6 +23,11 @@ export type BuildEngineOptions = {
   mergePlan: MergePlan;
   buildPlan: BuildTask[];
   project: Project;
+  validation?: {
+    enabled?: boolean;
+    commandsToRun?: string[];
+    executor?: CommandExecutor;
+  };
 };
 
 export type BuildResult = {
@@ -29,6 +37,9 @@ export type BuildResult = {
   docsGenerated: string[];
   testsGenerated: string[];
   errors: string[];
+  validationCommands: DetectedCommand[];
+  validation: ValidationRunResult | null;
+  repair: RepairResult | null;
 };
 
 type PackageJson = {
@@ -115,13 +126,47 @@ export async function runBuildEngine(options: BuildEngineOptions): Promise<Build
     generatedFiles.add(file);
   }
 
+  let validationCommands: DetectedCommand[] = [];
+  let validation: ValidationRunResult | null = null;
+  let repair: RepairResult | null = null;
+  if (options.validation?.enabled !== false) {
+    await runTask(taskLog, "verify-builds", async () => {
+      validationCommands = await detectProjectCommands(options.outputDir);
+      validation = await runValidationCommands(
+        options.outputDir,
+        validationCommands,
+        {
+          commandsToRun: options.validation?.commandsToRun,
+          saveFailuresDir: path.join(options.outputDir, ".gitmash-validation"),
+        },
+        options.validation?.executor,
+      );
+      if (!validation.success) {
+        repair = await runRepairLoop(
+          options.outputDir,
+          validationCommands,
+          validation,
+          { commandsToRun: options.validation?.commandsToRun },
+          options.validation?.executor,
+        );
+        validation = repair.validation ?? validation;
+      }
+      if (validation && !validation.success) {
+        errors.push(...validation.failures.map((failure) => `${failure.command} failed: ${failure.runCommand}`));
+      }
+    });
+  }
+
   return {
-    success: errors.length === 0,
+    success: errors.length === 0 && (validation?.success ?? true),
     outputDir: options.outputDir,
     generatedFiles: [...generatedFiles].sort(),
     docsGenerated,
     testsGenerated: [...testsGenerated].sort(),
     errors,
+    validationCommands,
+    validation,
+    repair,
   };
 }
 

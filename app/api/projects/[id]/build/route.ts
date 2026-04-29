@@ -24,16 +24,21 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Project not found." }, { status: 404 });
   }
 
-  return NextResponse.json(
-    getProjectBuild(id) ?? {
+  const build = getProjectBuild(id) ?? {
       projectId: id,
       status: "idle",
       logs: [],
       startedAt: null,
       completedAt: null,
       result: null,
-    },
-  );
+    };
+
+  return NextResponse.json({
+    ...build,
+    validation: build.result?.validation ?? null,
+    repair: build.result?.repair ?? null,
+    validationCommands: build.result?.validationCommands ?? [],
+  });
 }
 
 export async function POST(_request: Request, context: RouteContext) {
@@ -82,6 +87,16 @@ export async function POST(_request: Request, context: RouteContext) {
       project,
     });
 
+    const validationLog = result.validation
+      ? `Validation ${result.validation.success ? "passed" : "failed"} (${result.validation.commands.length} command(s) run).`
+      : "No validation commands were run.";
+    updateBuildStatus(id, { log: validationLog });
+    if (result.repair) {
+      updateBuildStatus(id, {
+        log: `Repair loop ${result.repair.success ? "resolved validation failures" : "could not resolve all failures"} after ${result.repair.attempts} attempt(s).`,
+      });
+    }
+
     const status = result.success ? "completed" : "failed";
     const build = updateBuildStatus(id, {
       status,
@@ -103,6 +118,9 @@ export async function POST(_request: Request, context: RouteContext) {
         docsGenerated: [],
         testsGenerated: [],
         errors: [message],
+        validationCommands: [],
+        validation: null,
+        repair: null,
       },
     });
     return NextResponse.json(build, { status: 500 });

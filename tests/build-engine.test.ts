@@ -35,6 +35,14 @@ describe("build engine", () => {
       mergePlan: plan,
       buildPlan: createBuildTasks(plan),
       project: project(root),
+      validation: {
+        executor: async (_projectDir, runCommand) => ({
+          stdout: `ran ${runCommand}\n`,
+          stderr: "",
+          exitCode: 0,
+          success: true,
+        }),
+      },
     });
 
     assert.equal(result.success, true);
@@ -61,6 +69,8 @@ describe("build engine", () => {
     assert.match(await readFile(path.join(outputDir, "AGENT_HANDOFF.md"), "utf8"), /## Next Recommended Tasks/);
     assert.match(await readFile(path.join(outputDir, "src\/features\/workflow.ts"), "utf8"), /aiWorkflow/);
     assert.match(await readFile(path.join(outputDir, "build-task-log.json"), "utf8"), /"status": "completed"/);
+    assert.equal(result.validation?.success, true);
+    assert.ok(result.validationCommands.some((command) => command.command === "install" && command.detected));
   });
 });
 
