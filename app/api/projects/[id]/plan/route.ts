@@ -10,17 +10,21 @@ import {
   type MergePlan,
 } from "@/lib/merge-planner";
 import { readJsonIfExists } from "@/lib/analysis-utils";
+import { extractApiKey } from "@/lib/api-key-helper";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
   const project = getProject(id);
   if (!project) {
     return NextResponse.json({ error: "Project not found." }, { status: 404 });
   }
+
+  // Accept API key for future AI-powered planning
+  const apiKey = extractApiKey(request);
 
   const existing = getProjectMergePlan(id);
   if (existing) {

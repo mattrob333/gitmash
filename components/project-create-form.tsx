@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { GitMerge } from "lucide-react";
+import { GitMerge, AlertCircle, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getStoredApiKey } from "@/components/settings-dialog";
 import type { Project } from "@/types/project";
 
 type SubmitState =
@@ -26,13 +27,20 @@ export function ProjectCreateForm() {
       String(formData.get(key) ?? ""),
     );
     const brief = String(formData.get("brief") ?? "");
+    const apiKey = getStoredApiKey();
 
     const response = await fetch("/api/projects", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(apiKey ? { "x-api-key": apiKey } : {}),
+      },
       body: JSON.stringify({ repoUrls, brief }),
     });
-    const body = (await response.json()) as { project?: Project; error?: string };
+    const body = (await response.json()) as {
+      project?: Project;
+      error?: string;
+    };
 
     if (!response.ok || !body.project) {
       setState({ status: "error", message: body.error ?? "Unable to create project." });
@@ -42,8 +50,21 @@ export function ProjectCreateForm() {
     setState({ status: "success", project: body.project });
   }
 
+  const apiKey = getStoredApiKey();
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
+      {!apiKey && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            Add your OpenAI API key in{" "}
+            <span className="font-medium">Settings</span> (gear icon above) to
+            enable AI analysis.
+          </span>
+        </div>
+      )}
+
       <RepoInput id="repoUrl1" label="Repository 1" required />
       <RepoInput id="repoUrl2" label="Repository 2" required />
       <RepoInput id="repoUrl3" label="Repository 3" />
@@ -53,7 +74,7 @@ export function ProjectCreateForm() {
         <Textarea
           id="brief"
           name="brief"
-          placeholder="Describe what GitMash should preserve, combine, or rewrite from each repository."
+          placeholder='Example: "Keep repo A auth + dashboard, take repo B billing, merge into repo C layout."'
           required
         />
       </div>
@@ -69,7 +90,15 @@ export function ProjectCreateForm() {
   );
 }
 
-function RepoInput({ id, label, required = false }: { id: string; label: string; required?: boolean }) {
+function RepoInput({
+  id,
+  label,
+  required = false,
+}: {
+  id: string;
+  label: string;
+  required?: boolean;
+}) {
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
@@ -97,5 +126,7 @@ function StatusMessage({ state }: { state: SubmitState }) {
     );
   }
 
-  return <p className="text-sm text-muted-foreground">Public GitHub repositories only.</p>;
+  return (
+    <p className="text-sm text-muted-foreground">Public GitHub repositories only.</p>
+  );
 }

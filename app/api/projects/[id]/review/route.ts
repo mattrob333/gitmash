@@ -8,6 +8,7 @@ import {
   getProjectReview,
   saveProjectReview,
 } from "@/server/projects";
+import { extractApiKey, createProviderFromKey } from "@/lib/api-key-helper";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -30,7 +31,7 @@ export async function GET(_request: Request, context: RouteContext) {
   });
 }
 
-export async function POST(_request: Request, context: RouteContext) {
+export async function POST(request: Request, context: RouteContext) {
   const { id } = await context.params;
   const project = getProject(id);
   if (!project) {
@@ -41,6 +42,10 @@ export async function POST(_request: Request, context: RouteContext) {
   if (!build?.result) {
     return NextResponse.json({ error: "Review requires a completed build result." }, { status: 409 });
   }
+
+  // Use user's API key from the request header if provided
+  const apiKey = extractApiKey(request);
+  const aiProvider = createProviderFromKey(apiKey);
 
   const startedAt = new Date().toISOString();
   saveProjectReview(id, {
@@ -57,6 +62,7 @@ export async function POST(_request: Request, context: RouteContext) {
       projectDir: path.join(project.outputPath, "final-project"),
       mergePlan: getProjectMergePlan(id)?.plan ?? null,
       buildResult: build.result,
+      aiProvider: aiProvider ?? undefined,
     });
     await writeReviewReport(path.join(project.outputPath, "final-project"), report);
     const review = saveProjectReview(id, {
