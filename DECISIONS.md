@@ -32,3 +32,8 @@
 - Keep build planning as a DAG of typed build tasks separate from merge-plan generation. Phase 7 can execute or update task status without changing the user-facing merge review contract.
 - Store merge-plan approval in the same in-process project registry used by the MVP project lifecycle. Durable approval state remains deferred until a database is introduced.
 - Implement `/api/projects/[id]/plan/approve` as a nested App Router endpoint because Next.js route files cannot serve both `/plan` and `/plan/approve` from the same file.
+- Implement the Phase 7 build engine as deterministic filesystem orchestration with no AI calls and no execution of source repository code. The build copies, adapts, scaffolds, documents, and logs locally so Phase 8 can validate commands separately.
+- Generate the final project under `output/<project-id>/final-project` from a freshly removed directory on each build. This prevents stale artifacts from earlier attempts from being mistaken for current generated output.
+- Merge dependency manifests structurally after file operations, preferring the selected base package metadata while unioning dependencies from all analyzed repos. Version conflict resolution remains a Phase 8 repair concern.
+- Keep generated documentation deterministic and PRD-shaped across all builds, including the critical `AGENT_HANDOFF.md`, so another AI agent can continue without relying on hidden build context.
+- Store Phase 7 build status and logs in the existing in-process project registry. Durable build history remains deferred until the app introduces persistent project storage.

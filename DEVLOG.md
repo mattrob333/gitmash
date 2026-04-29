@@ -49,3 +49,9 @@
 - Added `GET /api/projects/[id]/plan` to return or generate a merge plan from saved analysis artifacts and `POST /api/projects/[id]/plan/approve` to mark the current plan approved.
 - Added Phase 6 planner tests for base repo selection, decision resolution, task generation, dependency ordering, missing dependencies, and cycle detection using fixture data only.
 - Ran `npm test`; all Phase 1 through Phase 6 tests passed.
+- Started Phase 7 Build Engine from `BUILD.md` and PRD sections 16, 28, and 31.
+- Added `lib/file-copier.ts` for filtered base repo copying, decision-based keep/adapt file copying, import/path adaptation, safe target path resolution, and fresh file scaffolding.
+- Added `lib/doc-generator.ts` to generate the required markdown documentation pack: `README.md`, `PROJECT_SPEC.md`, `ARCHITECTURE.md`, `MERGE_PLAN.md`, `DECISIONS.md`, `TESTING.md`, `DEVLOG.md`, and `AGENT_HANDOFF.md`.
+- Added `lib/build-engine.ts` to create a fresh final project directory, copy the selected base repo, apply merge decisions, merge `package.json` and `requirements.txt`, create test scaffolds, write a build task log, and return a structured `BuildResult`.
+- Added build status storage helpers in `server/projects.ts` and `POST`/`GET /api/projects/[id]/build` for approved-plan build execution and status retrieval.
+- Added Phase 7 tests for file copying/adaptation, documentation generation, and full build orchestration using local temp-directory fixtures only.
