@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateRepoUrls } from "@/lib/github";
-import { createProject } from "@/server/projects";
+import { cloneProjectRepos, createProject, validateRepos } from "@/server/projects";
 import type { CreateProjectInput } from "@/types/project";
 
 export async function POST(request: Request) {
@@ -24,6 +24,9 @@ export async function POST(request: Request) {
   try {
     const repos = validateRepoUrls(body.repoUrls);
     const project = await createProject(brief, repos);
+    await validateRepos(project);
+    void cloneProjectRepos(project);
+
     return NextResponse.json({ project }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create project.";

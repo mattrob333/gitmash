@@ -11,3 +11,11 @@
 - Use text inputs for repository URLs so the UI accepts both HTTPS and `git@github.com:owner/repo.git` forms that the shared parser supports.
 - Use Node's built-in test runner for Phase 1 utility tests. This allows verification in restricted environments before frontend dependencies are installed.
 - Treat the extracted `GitMash-PRD.md` as a source reference alongside the PDF when present, because text PRD content is easier to inspect and diff during implementation.
+
+## 2026-04-29
+
+- Validate public repository availability through unauthenticated GitHub API calls before cloning. Private repositories are treated as unavailable for the MVP until OAuth support is added.
+- Use shallow `git clone --depth 1` into the project workspace to minimize history intake while preserving enough metadata for branch and commit tracking.
+- Keep repo intake security conservative by limiting Phase 2 clone processing to git metadata, filesystem size, manifest reads, and file extension counts. No dependency installation or repository scripts run during intake.
+- Store Phase 2 project state in an in-process registry to support the clone status endpoint without introducing a database before the MVP needs durable retrieval.
+- Use local git repositories and mocked command runners in tests so validation and clone coverage does not depend on network access or public GitHub availability.

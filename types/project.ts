@@ -1,4 +1,4 @@
-export type ProjectStatus = "created" | "validating" | "failed";
+export type ProjectStatus = "created" | "validating" | "cloning" | "cloned" | "failed";
 
 export type SourceRepo = {
   id: string;
@@ -6,7 +6,14 @@ export type SourceRepo = {
   owner: string;
   name: string;
   slug: string;
-  cloneStatus: "pending";
+  description: string | null;
+  topics: string[];
+  branch: string;
+  commitSha: string;
+  sizeBytes: number;
+  primaryLanguage: string;
+  cloneError: string | null;
+  cloneStatus: "pending" | "cloning" | "cloned" | "failed";
 };
 
 export type Project = {
