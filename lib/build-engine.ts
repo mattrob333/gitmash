@@ -130,31 +130,29 @@ export async function runBuildEngine(options: BuildEngineOptions): Promise<Build
   let validation: ValidationRunResult | null = null;
   let repair: RepairResult | null = null;
   if (options.validation?.enabled !== false) {
-    await runTask(taskLog, "run-validation", async () => {
-      validationCommands = await detectProjectCommands(options.outputDir);
-      validation = await runValidationCommands(
+    validationCommands = await detectProjectCommands(options.outputDir);
+    validation = await runValidationCommands(
+      options.outputDir,
+      validationCommands,
+      {
+        commandsToRun: options.validation?.commandsToRun,
+        saveFailuresDir: path.join(options.outputDir, ".gitmash-validation"),
+      },
+      options.validation?.executor,
+    );
+    if (!validation.success) {
+      repair = await runRepairLoop(
         options.outputDir,
         validationCommands,
-        {
-          commandsToRun: options.validation?.commandsToRun,
-          saveFailuresDir: path.join(options.outputDir, ".gitmash-validation"),
-        },
+        validation,
+        { commandsToRun: options.validation?.commandsToRun },
         options.validation?.executor,
       );
-      if (!validation.success) {
-        repair = await runRepairLoop(
-          options.outputDir,
-          validationCommands,
-          validation,
-          { commandsToRun: options.validation?.commandsToRun },
-          options.validation?.executor,
-        );
-        validation = repair.validation ?? validation;
-      }
-      if (validation && !validation.success) {
-        errors.push(...validation.failures.map((failure) => `${failure.command} failed: ${failure.runCommand}`));
-      }
-    });
+      validation = repair.validation ?? validation;
+    }
+    if (validation && !validation.success) {
+      errors.push(...validation.failures.map((failure) => `${failure.command} failed: ${failure.runCommand}`));
+    }
   }
 
   // capture outside closure for type narrowing
