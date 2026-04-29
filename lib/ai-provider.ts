@@ -43,7 +43,7 @@ export class OpenAIProvider implements AIProvider {
       throw new Error("OpenAIProvider requires an apiKey.");
     }
     this.apiKey = config.apiKey;
-    this.model = config.model ?? "gpt-4o";
+    this.model = config.model ?? "gpt-5.5";
     this.maxTokens = config.maxTokens;
     this.temperature = config.temperature;
   }
