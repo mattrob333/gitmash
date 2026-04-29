@@ -30,3 +30,9 @@
 - Added `lib/repo-analyzer.ts` to run all Phase 3 detectors and save `file-tree.json`, `dependency-analysis.json`, `route-map.json`, `component-map.json`, and `risk-report.json` under `analysis/<repo-id>/`.
 - Added local temp-directory tests for all Phase 3 analyzers and artifact generation.
 - Ran `npm test`; all Phase 1, Phase 2, and Phase 3 utility tests passed.
+- Started Phase 4 Repo Digest Generation from `BUILD.md` and PRD section 8.5.
+- Added `lib/source-chunker.ts` to rank entry points, route handlers, components, services, models, schemas, and config files, then save markdown chunks under `analysis/<repo-id>/important-files/`.
+- Added `lib/digest-generator.ts` to render `repo-digest.md` with capped sections for metadata, stack, package manager, dependencies, file tree, key files, routes, components/services, data models, auth, AI features, tests, docs, and risks.
+- Updated `lib/repo-analyzer.ts` so a completed analysis now includes JSON artifacts, important-file chunks, and the repo digest path in `analysis.artifacts`.
+- Added local fixture tests for digest generation, file tree truncation, chunk selection, and sensitive-file exclusion/redaction.
+- Ran `npm test`; all Phase 1 through Phase 4 utility tests passed.

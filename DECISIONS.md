@@ -22,3 +22,5 @@
 - Implement Phase 3 static analysis as local filesystem scanners that read manifests and source text only. The analyzer never installs dependencies or executes cloned repository code.
 - Save Phase 3 artifacts under `analysis/<repo-id>/` as focused JSON files so later digest and AI phases can consume objective facts without rescanning repositories.
 - Keep stack, dependency, route, component, and risk detectors heuristic-based for the MVP. The rules favor deterministic, explainable markers over broad parsing that would require additional dependencies.
+- Generate Phase 4 repo digests from the existing static analysis artifacts instead of rescanning with separate logic. This keeps AI-facing markdown aligned with the JSON facts that later agents will cite.
+- Chunk only ranked important files into `important-files/file-NNN.md`, with filtered paths and basic secret-line redaction. This preserves prompt budget while avoiding sensitive file intake.

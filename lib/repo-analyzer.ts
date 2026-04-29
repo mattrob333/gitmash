@@ -2,9 +2,11 @@ import path from "node:path";
 import { writeJsonArtifact } from "./analysis-utils.ts";
 import { detectComponents } from "./component-map.ts";
 import { analyzeDependencies } from "./dependency-analyzer.ts";
+import { generateRepoDigest } from "./digest-generator.ts";
 import { generateFileTree } from "./file-filter.ts";
 import { detectRoutes } from "./route-detector.ts";
 import { generateRiskReport } from "./risk-report.ts";
+import { chunkSourceFiles } from "./source-chunker.ts";
 import { detectPackageManager, detectStack, detectTestFramework } from "./stack-detector.ts";
 import type { RepoAnalysis, SourceRepo } from "../types/project.ts";
 
@@ -38,7 +40,7 @@ export async function analyzeRepo(
     generateRiskReport(repoPath),
   ]);
 
-  const artifacts = {
+  const artifacts: Record<string, string> = {
     "file-tree.json": await writeJsonArtifact(analysisDir, "file-tree.json", fileTree),
     "dependency-analysis.json": await writeJsonArtifact(
       analysisDir,
@@ -50,7 +52,7 @@ export async function analyzeRepo(
     "risk-report.json": await writeJsonArtifact(analysisDir, "risk-report.json", risks),
   };
 
-  return {
+  const analysis: RepoAnalysis = {
     repoId,
     repoPath,
     generatedAt: new Date().toISOString(),
@@ -64,6 +66,20 @@ export async function analyzeRepo(
     risks,
     artifacts,
   };
+
+  const importantFileArtifacts = await chunkSourceFiles(repoPath, analysisDir, analysis);
+  for (const artifactPath of importantFileArtifacts) {
+    artifacts[path.relative(analysisDir, artifactPath).split(path.sep).join("/")] = artifactPath;
+  }
+  artifacts["important-files"] = path.join(analysisDir, "important-files");
+  artifacts["repo-digest.md"] = await generateRepoDigest(
+    analysis,
+    repoMetadata,
+    analysisDir,
+    importantFileArtifacts,
+  );
+
+  return analysis;
 }
 
 function safeRepoId(value: string): string {

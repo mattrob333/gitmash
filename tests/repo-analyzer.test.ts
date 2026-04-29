@@ -31,7 +31,20 @@ describe("analyzeRepo", () => {
     assert.ok(analysis.components.some((component) => component.path === "components/Button.tsx"));
     assert.ok(analysis.dependencies.riskyPackages.some((dependency) => dependency.name === "request"));
 
-    for (const artifactPath of Object.values(analysis.artifacts)) {
+    assert.ok(analysis.artifacts["repo-digest.md"]?.endsWith("repo-digest.md"));
+    assert.ok(analysis.artifacts["important-files"]?.endsWith("important-files"));
+    assert.ok(
+      Object.keys(analysis.artifacts).some((artifactName) => artifactName.startsWith("important-files/file-")),
+    );
+
+    const digest = await readFile(analysis.artifacts["repo-digest.md"], "utf8");
+    assert.match(digest, /## Repo Metadata/);
+    assert.match(digest, /## Routes\/API Endpoints/);
+
+    for (const [artifactName, artifactPath] of Object.entries(analysis.artifacts)) {
+      if (!artifactName.endsWith(".json")) {
+        continue;
+      }
       const contents = await readFile(artifactPath, "utf8");
       assert.doesNotThrow(() => JSON.parse(contents));
     }
